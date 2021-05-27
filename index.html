@@ -5,9 +5,19 @@
   <meta charset='utf-8' />
   <title></title>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+  <!-- MDB -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.5.0/mdb.min.css" rel="stylesheet" />
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.js'></script>
-  <link href='css/style.css' rel='stylesheet' />
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.0.1/mapbox-gl.css' rel='stylesheet' />
   <script src='https://npmcdn.com/csv2geojson@latest/csv2geojson.js'></script>
   <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
   <style>
@@ -18,7 +28,7 @@
 
     #map {
       position: absolute;
-      top: 0;
+      top: 75px;
       bottom: 0;
       width: 100%;
     }
@@ -72,38 +82,151 @@
     .mapboxgl-popup-anchor-top>.mapboxgl-popup-tip {
       border-bottom-color: rgb(61, 59, 59);
     }
+
     img {
       width: 100%;
     }
 
+    nav {
+      z-index: 999;
+    }
+
+    .nav-link {
+      font-size: 24px;
+      font-weight: bold;
+      color: black !important;
+    }
+
+    .nav-link:hover {
+      cursor: default;
+      color: black !important
+    }
+
+    small {
+      font-size: 12px;
+      font-style: italic;
+    }
+
+    .loader {
+      /* margin: -10px 0 0 -250px; */
+      /* height: 100px; */
+      /* width: 20%; */
+      position: fixed;
+      text-align: center;
+      padding: 1em;
+      top: 50%;
+      left: 50%;
+      /* margin: 0 auto 1em; */
+      z-index: 9999;
+    }
+
+    svg path,
+    svg rect {
+      fill: #1266f1;
+    }
+
+    .overlay {
+      position: fixed;
+      /* Sit on top of the page content */
+      /* display: none; */
+      /* Hidden by default */
+      width: 100%;
+      /* Full width (cover the whole page) */
+      height: 100%;
+      /* Full height (cover the whole page) */
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.15);
+      /* Black background with opacity */
+      z-index: 2;
+      /* Specify a stack order in case you're using a different order for other elements */
+      cursor: pointer;
+      /* Add a pointer on hover */
+    }
   </style>
 </head>
 
 <body>
-
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <!-- Container wrapper -->
+    <div class="container">
+      <!-- Navbar brand -->
+      <!-- <a class="navbar-brand me-2" href="https://mdbgo.com/">
+          <img src="https://mdbootstrap.com/img/logo/mdb-transaprent-noshadows.png" height="16" alt=""
+              loading="lazy" style="margin-top: -1px;" />
+      </a> -->
+      <!-- Toggle button -->
+      <button class="navbar-toggler" type="button" data-mdb-toggle="collapse" data-mdb-target="#navbarButtonsExample"
+        aria-controls="navbarButtonsExample" aria-expanded="false" aria-label="Toggle navigation">
+        <i class="fas fa-bars"></i>
+      </button>
+      <!-- Collapsible wrapper -->
+      <div class="collapse navbar-collapse" id="navbarButtonsExample">
+        <!-- Left links -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="#">Building Map <small>Dale Brunning</a>
+          </li>
+        </ul>
+        <!-- Left links -->
+        <div class="d-flex align-items-center">
+          <!-- <button type="button" class="btn btn-link px-3 me-2">
+                  Login
+              </button> -->
+          <button type="button" class="btn btn-primary me-3" style="text-transform: capitalize;" onclick="SendEmail()">
+            <i class="fas fa-envelope"></i> Send an email to me
+          </button>
+          <!-- <a class="btn btn-dark px-3" href="https://github.com/mdbootstrap/mdb-ui-kit" role="button"><i
+                      class="fab fa-github"></i></a> -->
+        </div>
+      </div>
+      <!-- Collapsible wrapper -->
+    </div>
+    <!-- Container wrapper -->
+  </nav>
   <div id='map'></div>
- 
+  <div class="overlay">
+    <div class="loader loader--style1" title="0" id="loader">
+      <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+        x="0px" y="0px" width="40px" height="40px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"
+        xml:space="preserve">
+        <path opacity="0.2" fill="#000" d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946
+  s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634
+  c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z" />
+        <path fill="#000" d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0
+  C22.32,8.481,24.301,9.057,26.013,10.047z">
+          <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 20 20" to="360 20 20"
+            dur="0.5s" repeatCount="indefinite" />
+        </path>
+      </svg>
+    </div>
+  </div>
   <script>
-
     var transformRequest = (url, resourceType) => {
       var isMapboxRequest =
         url.slice(8, 22) === "api.mapbox.com" ||
         url.slice(10, 26) === "tiles.mapbox.com";
       return {
-        url: isMapboxRequest
-          ? url.replace("?", "?pluginName=sheetMapper&")
-          : url
+        url: isMapboxRequest ?
+          url.replace("?", "?pluginName=sheetMapper&") : url
       };
     };
     //YOUR TURN: add your Mapbox token
-    mapboxgl.accessToken = 'pk.eyJ1IjoiaXZwcm9qZWN0IiwiYSI6ImNrcDZuMjZvajAzZDAyd3BibDJvNmJ4bjMifQ.5FpaSBhuOWEDm3m8PQp3Zg'; //Mapbox token 
+    mapboxgl.accessToken =
+      'pk.eyJ1IjoiaXZwcm9qZWN0IiwiYSI6ImNrcDZuMjZvajAzZDAyd3BibDJvNmJ4bjMifQ.5FpaSBhuOWEDm3m8PQp3Zg'; //Mapbox token 
+
     var map = new mapboxgl.Map({
       container: 'map', // container id
-      style: 'mapbox://styles/mapbox/streets-v11', // YOUR TURN: choose a style: https://docs.mapbox.com/api/maps/#styles
+      style: 'mapbox://styles/mapbox/light-v10', // YOUR TURN: choose a style: https://docs.mapbox.com/api/maps/#styles
       center: [-3.931, 50.3465], // starting position [lng, lat]
-      zoom: 16,// starting zoom
+      zoom: 16, // starting zoom
       transformRequest: transformRequest
     });
+
+    map.addControl(new mapboxgl.NavigationControl());
 
     $(document).ready(function () {
       $.ajax({
@@ -111,7 +234,9 @@
         //YOUR TURN: Replace with csv export link
         url: 'https://docs.google.com/spreadsheets/d/1zh10oPPSiPEvb2EZFD-UZf2H1_sq_rgj/gviz/tq?tqx=out:csv&sheet=dataset',
         dataType: "text",
-        success: function (csvData) { makeGeoJSON(csvData); }
+        success: function (csvData) {
+          makeGeoJSON(csvData);
+        }
       });
 
       function makeGeoJSON(csvData) {
@@ -120,8 +245,8 @@
           lonfield: 'longitude',
           delimiter: ','
         }, function (err, data) {
-          map.on('load', function () {
-
+          map.on('load', function (a) {
+            console.log(data)
             //Add the the layer to the map
             map.addLayer({
               'id': 'csvData',
@@ -131,21 +256,26 @@
                 'data': data
               },
               'paint': {
-                'circle-radius': 5,
-                'circle-color': "purple"
+                'circle-radius': 4,
+                'circle-color': "red"
               }
             });
+            //Hide loading bar once tiles from geojson are loaded
+            //Hide loading bar once tiles from geojson are loaded
+            map.on('data', function (e) {
+              if (e.dataType === 'source' && e.sourceId === 'csvData') {
+                document.getElementById("loader").style.visibility = "hidden";
+              }
+            })
+
 
             // When a click event occurs on a feature in the csvData layer, open a popup at the
             // location of the feature, with description HTML from its properties.
             map.on('click', 'csvData', function (e) {
               var coordinates = e.features[0].geometry.coordinates.slice();
 
-              //set popup text
-              //You can adjust the values of the popup to match the headers of your CSV.
-              // For example: e.features[0].properties.Name is retrieving information from the field Name in the original CSV.
-              var description = `<h3> ${e.features[0].properties.preview_name} </h3>`+ `<img id="loader" src="assets/Spinner-2.gif" style="position:absolute;z-index:-999"></img>` + `<img id="imageshow" src=${e.features[0].properties.thumb}>` +`</img>` + `<h4>` + `<b>` + `Phone: ` + `</b>` + e.features[0].properties.Phone + `</h4>`;
-
+              let description =
+                `<h3 style="font-size:16px; font-weight:bold;text-align:center;border-bottom: 0.5px solid #ccc;padding: 18px;">${"ID: " + e.features[0].properties.id + ' - ' +e.features[0].properties.preview_name}</h3><iframe width="100%" height="266px" allowfullscreen style="border-style:none;" src="imgprev.html?thumb=${e.features[0].properties.thumb}&show_high=${e.features[0].properties.image_link}"></iframe> `
               // Ensure that if the map is zoomed out such that multiple
               // copies of the feature are visible, the popup appears
               // over the copy being pointed to.
@@ -170,14 +300,13 @@
             });
 
             var bbox = turf.bbox(data);
-            map.fitBounds(bbox, { padding: 50 });
-
+            map.fitBounds(bbox, {
+              padding: 50
+            });
           });
         });
       };
     });
-
-
   </script>
 
 </body>
