@@ -28,9 +28,15 @@
 
     #map {
       position: absolute;
-      top: 75px;
+      top: 72px;
       bottom: 0;
       width: 100%;
+    }
+
+    .mapboxgl-ctrl-top-right {
+      top: 0;
+      right: 0;
+      z-index: 999 !important;
     }
 
     /* Popup styling */
@@ -125,7 +131,7 @@
       fill: #1266f1;
     }
 
-    .overlay {
+    #overlay {
       position: fixed;
       /* Sit on top of the page content */
       /* display: none; */
@@ -144,6 +150,37 @@
       /* Specify a stack order in case you're using a different order for other elements */
       cursor: pointer;
       /* Add a pointer on hover */
+    }
+
+    @media only screen and (max-width: 480px) {
+      #map {
+        margin-top: 48px !important;
+      }
+
+      #overlay {
+        margin-top: 48px !important
+      }
+
+      .nav-link {
+        text-align: center;
+        font-style: normal !important;
+      }
+
+      .me-3 {
+        margin-right: 0 !important;
+      }
+
+      .mapboxgl-popup-content {
+        max-width: 300px;
+      }
+
+      .mapboxgl-popup-content div {
+        padding: 0em;
+      }
+
+      .mapboxgl-popup-content p {
+        margin: 0.5em 0.5em;
+      }
     }
   </style>
 </head>
@@ -188,7 +225,7 @@
     <!-- Container wrapper -->
   </nav>
   <div id='map'></div>
-  <div class="overlay">
+  <div id="overlay">
     <div class="loader loader--style1" title="0" id="loader">
       <svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
         x="0px" y="0px" width="40px" height="40px" viewBox="0 0 40 40" enable-background="new 0 0 40 40"
@@ -216,7 +253,7 @@
     };
     //YOUR TURN: add your Mapbox token
     mapboxgl.accessToken =
-      'pk.eyJ1IjoiaXZwcm9qZWN0IiwiYSI6ImNrcDZuMjZvajAzZDAyd3BibDJvNmJ4bjMifQ.5FpaSBhuOWEDm3m8PQp3Zg'; //Mapbox token 
+      'pk.eyJ1IjoiaXZwcm9qZWN0IiwiYSI6ImNrcDZuOWltYzJyeGMycW1jNDVlbDQwejQifQ.97Y2eucdbVp1F2Ow8EHgBQ'; //Mapbox token 
 
     var map = new mapboxgl.Map({
       container: 'map', // container id
@@ -265,9 +302,9 @@
             map.on('data', function (e) {
               if (e.dataType === 'source' && e.sourceId === 'csvData') {
                 document.getElementById("loader").style.visibility = "hidden";
+                document.getElementById("overlay").style.visibility = "hidden";
               }
             })
-
 
             // When a click event occurs on a feature in the csvData layer, open a popup at the
             // location of the feature, with description HTML from its properties.
